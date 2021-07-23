@@ -41,14 +41,14 @@
 
 1. Open https://s3.console.aws.amazon.com/s3/bucket/create?region=ap-southeast-1
 2. Fill in as follow:
-    1. Bucket name: nextflow-temp-<timestamp>
+    1. Bucket name: `nextflow-temp-<timestamp>`
 3. Click `Create bucket`
 
 ### Create output bucket
 
 1. Open https://s3.console.aws.amazon.com/s3/bucket/create?region=ap-southeast-1
 2. Fill in as follow:
-    1. Bucket name: nextflow-ouput-<timestamp>
+    1. Bucket name: `nextflow-ouput-<timestamp>`
 3. Click `Create bucket`
 
 # Usage
