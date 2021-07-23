@@ -33,7 +33,7 @@
 ### Create job queues
 1. Open https://ap-southeast-1.console.aws.amazon.com/batch/home?region=ap-southeast-1#queues/new
 2. Fill in as follow:
-    1. Job queue name: my-job-queue
+    1. Job queue name: job-queue
     2. Select a compute environment: ec2-spot-compute-environment
 3. Click `Create`
 
