@@ -27,25 +27,44 @@ const createS3Resources = (stack) => {
     });
 }
 
-const createBatchResources = (stack) => {
+const createIamEC2InstanceProfile = (stack) => {
     const administratorAccessPolicy = iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess")
-    const iamRole = new iam.Role(stack, "aws-batch-nextflow-demo-role-id", {
+    const iamEc2Role = new iam.Role(stack, "aws-ec2-nextflow-demo-role-id", {
+        roleName: "aws-ec2-nextflow-demo-role",
+        assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+        managedPolicies: [administratorAccessPolicy]
+    })
+    return new iam.CfnInstanceProfile(stack, "aws-ec2-nextflow-demo-instance-profile-id", {
+        roles: [iamEc2Role.roleName]
+    })
+}
+
+const createIamBatchRole = (stack) => {
+    const administratorAccessPolicy = iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess")
+    return new iam.Role(stack, "aws-batch-nextflow-demo-role-id", {
         roleName: "aws-batch-nextflow-demo-role",
         assumedBy: new iam.ServicePrincipal('batch.amazonaws.com'),
         managedPolicies: [administratorAccessPolicy]
     })
+}
 
+const createBatchResources = (stack) => {
+
+    const iamBatchRole = createIamBatchRole(stack)
+    const instanceProfile = createIamEC2InstanceProfile(stack)
     const vpc = ec2.Vpc.fromLookup(stack, "VPC", {
             isDefault: true
         }
     )
+
     const awsManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-spot`, {
         computeResources: {
             type: batch.ComputeResourceType.SPOT,
             allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
             vpc: vpc,
+            instanceRole: instanceProfile.instanceProfileName
         },
-        serviceRole: iamRole
+        serviceRole: iamBatchRole
     });
 
     const jobQueue = new batch.JobQueue(stack, `job-queue`, {
@@ -58,33 +77,15 @@ const createBatchResources = (stack) => {
         jobQueueName: "nextflow-job-queue-demo"
     });
 
-    new cdk.CfnOutput(stack, 'iamRoleName', {
-        value: iamRole.roleName,
+    new cdk.CfnOutput(stack, 'iamBatchRoleName', {
+        value: iamBatchRole.roleName,
         description: 'The name of the iam',
-        exportName: 'iamRoleName',
+        exportName: 'iamBatchRole',
     });
     new cdk.CfnOutput(stack, 'jobQueueName', {
         value: jobQueue.jobQueueName,
         description: 'The name of the job queue',
         exportName: 'jobQueueName',
-    });
-}
-
-const createEc2IamRole = (stack) => {
-    const administratorAccessPolicy = iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess")
-    const iamRole = new iam.Role(stack, "aws-ec2-nextflow-demo-role-id", {
-        roleName: "aws-ec2-nextflow-demo-role",
-        assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-        managedPolicies: [administratorAccessPolicy]
-    })
-
-    const instanceProfile = new iam.CfnInstanceProfile(stack, "aws-ec2-nextflow-demo-instance-profile-id", {
-        roles: [iamRole.roleName]
-    })
-    new cdk.CfnOutput(stack, 'instanceProfileName', {
-        value: instanceProfile.instanceProfileName,
-        description: 'The name of the instance profile ',
-        exportName: 'instanceProfileName',
     });
 }
 
@@ -100,7 +101,6 @@ class NextflowDemoCdkStack extends cdk.Stack {
 
         createS3Resources(this)
         createBatchResources(this)
-        createEc2IamRole(this)
     }
 }
 
