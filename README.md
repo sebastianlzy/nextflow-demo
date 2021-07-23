@@ -3,6 +3,8 @@
 1. Java 
 2. Nextflow
 3. Go
+4. AWS configuration and credential setup - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+5. AWS CDK
 
 ## Nextflow installation
 
@@ -20,24 +22,45 @@
 > export PATH=$PATH:~/go/bin/
 ```
 
+## CDK installation
+
+```
+> npm install -g aws-cdk
+> cdk --version
+```
+
+
+
 ## AWS resources
-### Create compute environment
+
+Option 1: CDK (preferred)
+
+```
+> cd aws-resources-cdk
+> npm install
+> npm run cdk:deploy
+```
+
+<details>
+<summary>Option 2: CDK (preferred)</summary>
+
+#### Create compute environment
 1. Open https://ap-southeast-1.console.aws.amazon.com/batch/home?region=ap-southeast-1#compute-environments
 2. Click `create` 
 3. Fill in as follow:
-    1. Compute environment name: ec2-spot-compute-environment
-    2. Provisioning model: spot
+    1. Compute environment name: `ec2-spot-compute-environment`
+    2. Provisioning model: `spot`
     3. Leave the rest as default
-4. Click `create compute environment`
+4. Click `Create compute environment`
 
-### Create job queues
+#### Create job queues
 1. Open https://ap-southeast-1.console.aws.amazon.com/batch/home?region=ap-southeast-1#queues/new
 2. Fill in as follow:
-    1. Job queue name: job-queue
-    2. Select a compute environment: ec2-spot-compute-environment
+    1. Job queue name: `job-queue`
+    2. Select a compute environment: `ec2-spot-compute-environment`
 3. Click `Create`
 
-### Create temp bucket
+#### Create temp bucket
 
 1. Open https://s3.console.aws.amazon.com/s3/bucket/create?region=ap-southeast-1
 2. Fill in as follow:
@@ -50,6 +73,13 @@
 2. Fill in as follow:
     1. Bucket name: `nextflow-ouput-<timestamp>`
 3. Click `Create bucket`
+
+### Update aws resource
+
+1. `vim aws-output.json`
+2. Fill in all the necessary information in the json
+
+</details>
 
 # Usage
 ## Clone repo
@@ -95,4 +125,5 @@ export S3_TEMP_BUCKET=s3://nextflow-temp-<timestamp>
 ## AWS batch jobs
 ![aws-batch](./readme/aws-batch-jobs.png)
 
-# Calculate ec2 pricing
+## Output in terminal
+![terminal](./readme/final-output.png)
