@@ -5,6 +5,8 @@
 3. Go
 4. AWS configuration and credential setup - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 5. AWS CDK
+6. jq
+
 
 ## Nextflow installation
 
@@ -29,6 +31,11 @@
 > cdk --version
 ```
 
+## jq installation
+
+```
+sudo yum install jq
+```
 
 # Usage
 ## 1. Clone repo
@@ -101,7 +108,7 @@ Downloading (bytes)... 5848241
 > cd ~/nextflow-demo
 > goodls -u https://drive.google.com/file/d/12lVQdYW3rH78P-twMHL1mIZ6bzM1aj96/view?usp=sharing
 > unzip wgbs_genomes.zip
-> aws s3 cp ./wgbs_genome s3://$(cat aws-outputs.json | jq -r '.NextflowDemoCdkStack.outputBucketName')/wgbs_genome --recursive
+> aws s3 cp ./wgbs_genomes s3://$(cat aws-outputs.json | jq -r '.NextflowDemoCdkStack.outputBucketName')/wgbs_genome --recursive
 ```
 
 ## 5. Run pipeline
