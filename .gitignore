@@ -1,0 +1,12 @@
+*.log*
+.nextflow.log
+.nextflow/*
+venv
+results/
+work
+wgbs_genomes
+data
+**/*/.DS_Store
+.DS_Store
+bin/__pycache__/*
+data.zip
