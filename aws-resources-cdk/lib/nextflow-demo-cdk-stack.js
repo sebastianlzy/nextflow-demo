@@ -77,6 +77,15 @@ const createEc2IamRole = (stack) => {
         assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
         managedPolicies: [administratorAccessPolicy]
     })
+
+    const instanceProfile = new iam.CfnInstanceProfile(stack, "aws-ec2-nextflow-demo-instance-profile-id", {
+        roles: [iamRole.roleName]
+    })
+    new cdk.CfnOutput(stack, 'instanceProfileName', {
+        value: instanceProfile.instanceProfileName,
+        description: 'The name of the instance profile ',
+        exportName: 'instanceProfileName',
+    });
 }
 
 class NextflowDemoCdkStack extends cdk.Stack {
