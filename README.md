@@ -48,7 +48,7 @@ Option 1: CDK (preferred)
 ```
 
 <details>
-<summary>Manual</summary>
+<summary>Option 2: Manual</summary>
 
 #### Create compute environment
 1. Open https://ap-southeast-1.console.aws.amazon.com/batch/home?region=ap-southeast-1#compute-environments
