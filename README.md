@@ -92,3 +92,5 @@ export S3_TEMP_BUCKET=s3://nextflow-temp-<timestamp>
 
 # References
 
+## AWS batch jobs
+![aws-batch](./readme/aws-batch-jobs.png)
