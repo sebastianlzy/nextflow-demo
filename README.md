@@ -92,6 +92,18 @@ Option 1: CDK (preferred)
 1. `vim aws-output.json`
 2. Fill in all the necessary information in the json
 
+```
+{
+  "NextflowDemoCdkStack": {
+    "tempBucketName": "nextflowdemocdkstack-nextflowtemp498b6c2a-c1siyr411tge",
+    "iamBatchRoleName": "aws-batch-nextflow-demo-role",
+    "outputBucketName": "nextflowdemocdkstack-nextflowoutput8388dea5-1b8tc4n2wo6tn",
+    "jobQueueName": "arn:aws:batch:ap-southeast-1:134800022762:job-queue/nextflow-job-queue-demo"
+  }
+}
+
+```
+
 </details>
 
 ## 3. Download data

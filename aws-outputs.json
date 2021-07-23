@@ -1,8 +1,0 @@
-{
-  "NextflowDemoCdkStack": {
-    "tempBucketName": "",
-    "outputBucketName": "",
-    "jobQueueName": "",
-    "iamRoleName": ""
-  }
-}
