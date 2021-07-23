@@ -100,7 +100,7 @@ Downloading (bytes)... 5848241
 ```
 > cd ~/nextflow-demo
 > goodls -u https://drive.google.com/file/d/12lVQdYW3rH78P-twMHL1mIZ6bzM1aj96/view?usp=sharing
-> unzip wgbs.zip
+> unzip wgbs_genomes.zip
 > aws s3 cp ./wgbs_genome s3://$(cat aws-outputs.json | jq -r '.NextflowDemoCdkStack.outputBucketName')/wgbs_genome --recursive
 ```
 
