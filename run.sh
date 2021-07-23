@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Modify the bucket name
+export S3_OUPUT_BUCKET=s3://nextflow-ouput-<timestamp>
+export S3_TEMP_BUCKET=s3://nextflow-temp-<timestamp>
 
 # Run pipeline locally
 # source venv/bin/activate
@@ -14,7 +17,7 @@ timestamp()
  date +"%Y-%m-%d-%H:%M:%S"
 }
 
-RUN_NEXTFLOW_PIPELINE="nextflow run main.nf -profile aws -bucket-dir s3://nextflow-temp --outdir=s3://nextflow-leesebas/output-$(timestamp) --refdir=s3://nextflow-leesebas/wgbs_genomes"
+RUN_NEXTFLOW_PIPELINE="nextflow run main.nf -profile aws -bucket-dir $S3_TEMP_BUCKET --outdir=$S3_OUPUT_BUCKET-$(timestamp) --refdir=s3://nextflow-leesebas/wgbs_genomes"
 # RUN_NEXTFLOW_PIPELINE="nextflow run main.nf -profile aws -bucket-dir s3://nextflow-temp --outdir=s3://nextflow-leesebas/output --refdir=s3://nextflow-leesebas/wgbs_genomes -resume"
 
 echo $RUN_NEXTFLOW_PIPELINE
