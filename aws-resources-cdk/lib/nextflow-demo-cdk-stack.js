@@ -70,6 +70,15 @@ const createBatchResources = (stack) => {
     });
 }
 
+const createEc2IamRole = (stack) => {
+    const administratorAccessPolicy = iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess")
+    const iamRole = new iam.Role(stack, "aws-ec2-nextflow-demo-role-id", {
+        roleName: "aws-ec2-nextflow-demo-role",
+        assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+        managedPolicies: [administratorAccessPolicy]
+    })
+}
+
 class NextflowDemoCdkStack extends cdk.Stack {
     /**
      *
@@ -82,6 +91,7 @@ class NextflowDemoCdkStack extends cdk.Stack {
 
         createS3Resources(this)
         createBatchResources(this)
+        createEc2IamRole(this)
     }
 }
 
