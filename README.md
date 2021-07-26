@@ -133,6 +133,17 @@ Downloading (bytes)... 5848241
 
 # References
 
+## Steps to configure on cloud9
+1. Setup dependencies, `. ./helper/setup-dependencies-in-cloud9.sh`
+2. Create AWS resources in step (2)
+3. In Cloud9, Open Preferences > AWS Settings
+1. Turn of `AWS managed temporary credentials`
+2. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
+3. Select Cloud9 instance
+   1. Actions > Security > Modify IAM role
+   2. NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>
+
+
 ## AWS batch jobs
 ![aws-batch](./readme/aws-batch-jobs.png)
 
