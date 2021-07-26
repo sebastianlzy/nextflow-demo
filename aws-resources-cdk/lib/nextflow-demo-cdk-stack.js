@@ -62,7 +62,7 @@ const createBatchResources = (stack) => {
             type: batch.ComputeResourceType.SPOT,
             allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
             vpc: vpc,
-            instanceRole: instanceProfile.instanceProfileName
+            instanceRole: instanceProfile.attrArn
         },
         serviceRole: iamBatchRole
     });
