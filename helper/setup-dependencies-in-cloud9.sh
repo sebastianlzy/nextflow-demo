@@ -21,4 +21,8 @@ echo "installing jq"
 sudo yum install -y jq
 echo "jq installed"
 
+echo "resize instance to 100GB"
+. ./resize-ebs.sh 100
+echo "resized instance to 100GB"
+
 export PATH=$PATH:~
