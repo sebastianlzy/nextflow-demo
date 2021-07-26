@@ -3,16 +3,22 @@
 echo "Installing Nextflow"
 cd ~
 curl -s https://get.nextflow.io | bash
-export PATH=$PATH:~
+echo "Nextflow installed"
 
 echo "Installing Goodls"
 cd ~
-go get -u github.com/tanaikech/goodls
-export PATH=$PATH:~/go/bin/
+wget https://github.com/tanaikech/goodls/releases/download/v1.2.7/goodls_linux_amd64
+mv goodls_linux_amd64 goodls
+chmod 755 goodls
+echo "Goodls installed"
 
 echo "Installing CDK"
 npm install -g aws-cdk
 cdk --version
+echo "CDK installed"
 
 echo "installing jq"
-sudo yum install jq
+sudo yum install -y jq
+echo "jq installed"
+
+export PATH=$PATH:~
