@@ -141,7 +141,7 @@ Downloading (bytes)... 5848241
 2. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
 3. Select Cloud9 instance
    1. Actions > Security > Modify IAM role
-   2. NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>
+   2. Select `NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>`
 
 
 ## AWS batch jobs
