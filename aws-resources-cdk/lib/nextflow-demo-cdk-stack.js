@@ -57,7 +57,7 @@ const createBatchResources = (stack) => {
         }
     )
 
-    const awsManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-spot`, {
+    const awsSpotManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-spot`, {
         computeResources: {
             type: batch.ComputeResourceType.SPOT,
             allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
@@ -67,10 +67,24 @@ const createBatchResources = (stack) => {
         serviceRole: iamBatchRole
     });
 
+    const awsOnDemandManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-on-demand`, {
+        computeResources: {
+            type: batch.ComputeResourceType.ON_DEMAND,
+            allocationStrategy: batch.AllocationStrategy.BEST_FIT,
+            vpc: vpc,
+            instanceRole: instanceProfile.attrArn
+        },
+        serviceRole: iamBatchRole
+    });
+
     const jobQueue = new batch.JobQueue(stack, `job-queue`, {
         computeEnvironments: [
             {
-                computeEnvironment: awsManagedComputeEnv,
+                computeEnvironment: awsSpotManagedComputeEnv,
+                order: 10,
+            },
+            {
+                computeEnvironment: awsOnDemandManagedComputeEnv,
                 order: 1,
             },
         ],
