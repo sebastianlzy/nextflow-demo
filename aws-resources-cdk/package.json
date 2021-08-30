@@ -9,7 +9,8 @@
     "cdk": "cdk",
     "test": "jest",
     "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk bootstrap; cdk synth; cdk deploy --outputs-file ../aws-outputs.json"
+    "cdk:deploy": "cdk bootstrap; cdk synth; cdk deploy --outputs-file ../aws-outputs.json",
+    "install-prerequisite": ". ./install-prequisite.sh"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.113.0",

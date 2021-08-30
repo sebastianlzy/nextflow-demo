@@ -10,9 +10,10 @@ const createS3Resources = (stack) => {
         autoDeleteObjects: true,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
+
     const outputBucket = new S3.Bucket(stack, `nextflow-output`, {
         autoDeleteObjects: true,
-        removalPolicy: cdk.RemovalPolicy.DESTROY
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
 
     new cdk.CfnOutput(stack, 'tempBucketName', {
@@ -62,8 +63,10 @@ const createBatchResources = (stack) => {
             type: batch.ComputeResourceType.SPOT,
             allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
             vpc: vpc,
-            instanceRole: instanceProfile.attrArn
+            instanceRole: instanceProfile.attrArn,
+            maxvCpus: 2048
         },
+        computeEnvironmentName: "spot-compute-env",
         serviceRole: iamBatchRole
     });
 
@@ -72,8 +75,11 @@ const createBatchResources = (stack) => {
             type: batch.ComputeResourceType.ON_DEMAND,
             allocationStrategy: batch.AllocationStrategy.BEST_FIT,
             vpc: vpc,
-            instanceRole: instanceProfile.attrArn
+            instanceRole: instanceProfile.attrArn,
+            desiredvCpus: 8,
+            maxvCpus: 2048
         },
+        computeEnvironmentName: "on-demand-compute-env",
         serviceRole: iamBatchRole
     });
 
