@@ -1,12 +1,32 @@
 # Prerequisite
 
-1. Java 
+1. Java
 2. Nextflow
 3. Go
 4. AWS configuration and credential setup - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 5. AWS CDK
 6. jq
 
+## 1. Clone repo
+```
+> cd ~
+> git clone https://github.com/sebastianlzy/nextflow-demo
+```
+
+## 2. Option1 : Install on AWS cloud9
+
+1. Create an [AWS Cloud9](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1) environment
+2. Setup dependencies, `. ./helper/setup-dependencies-in-cloud9.sh`
+3. Create AWS resources in step (2)
+4. In Cloud9, Open Preferences > AWS Settings
+   1. Turn off `AWS managed temporary credentials`
+5. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
+6. Select Cloud9 instance
+   1. Actions > Security > Modify IAM role
+   2. Select `NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>`
+
+<details>
+<summary>Option 2: Manual installation</summary>
 
 ## Nextflow installation
 
@@ -36,15 +56,11 @@
 ```
 sudo yum install jq
 ```
+</details>
 
 # Usage
-## 1. Clone repo
-```
-> cd ~
-> git clone https://github.com/sebastianlzy/nextflow-demo
-```
 
-## 2. Create AWS resources
+## 1. Create AWS resources
 
 Option 1: CDK (preferred)
 
@@ -106,7 +122,7 @@ Option 1: CDK (preferred)
 
 </details>
 
-## 3. Download data
+## 2. Download data
 ```
 > cd ~/nextflow-demo
 > goodls -u https://drive.google.com/file/d/1K8oPgVFJZwB_T2nJPc-TmvMGYg7oyU-e/view?usp=sharing
@@ -115,7 +131,7 @@ Downloading (bytes)... 5848241
 > unzip data.zip
 ```
 
-### 4. Copy wgbs data to output bucket
+## 3. Copy wgbs data to output bucket
 ```
 > cd ~/nextflow-demo
 > goodls -u https://drive.google.com/file/d/12lVQdYW3rH78P-twMHL1mIZ6bzM1aj96/view?usp=sharing
@@ -123,7 +139,7 @@ Downloading (bytes)... 5848241
 > aws s3 cp ./wgbs_genomes s3://$(cat aws-outputs.json | jq -r '.NextflowDemoCdkStack.outputBucketName')/wgbs_genomes --recursive
 ```
 
-## 5. Run pipeline
+## 4. Run pipeline
 
 ```
 # Run script
@@ -133,15 +149,10 @@ Downloading (bytes)... 5848241
 
 # References
 
-## Steps to configure on cloud9
-1. Setup dependencies, `. ./helper/setup-dependencies-in-cloud9.sh`
-2. Create AWS resources in step (2)
-3. In Cloud9, Open Preferences > AWS Settings
-   1. Turn off `AWS managed temporary credentials`
-2. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
-3. Select Cloud9 instance
-   1. Actions > Security > Modify IAM role
-   2. Select `NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>`
+
+
+## To configure AWS jobs
+1. Edit `vim ./nextflow.config`
 
 
 ## AWS batch jobs
