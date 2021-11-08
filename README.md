@@ -7,26 +7,30 @@
 5. AWS CDK
 6. jq
 
-## 1. Clone repo
-```
-> cd ~
-> git clone https://github.com/sebastianlzy/nextflow-demo
-```
 
-## 2. Option1 : Install on AWS cloud9
+## 1. Option1 : Install on AWS cloud9
 
 1. Create an [AWS Cloud9](https://ap-southeast-1.console.aws.amazon.com/cloud9/home?region=ap-southeast-1) environment
-2. Setup dependencies, `. ./helper/setup-dependencies-in-cloud9.sh`
-3. Create AWS resources in step (2)
-4. In Cloud9, Open Preferences > AWS Settings
+3. `git clone https://github.com/sebastianlzy/nextflow-demo`
+4. `cd nextflow-demo`
+5. Setup dependencies, `. ./helper/setup-dependencies-in-cloud9.sh`
+6. Create AWS resources in step (1) under Usage
+7. In Cloud9, Open Preferences > AWS Settings
    1. Turn off `AWS managed temporary credentials`
-5. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
-6. Select Cloud9 instance
+8. Open https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Instances:instanceState=running
+9. Select Cloud9 instance
    1. Actions > Security > Modify IAM role
    2. Select `NextflowDemoCDKStack-awsec2nextflowdemoinstanceprofileid-<HashId>`
 
 <details>
 <summary>Option 2: Manual installation</summary>
+
+## Clone repo
+
+```
+> cd ~
+> git clone https://github.com/sebastianlzy/nextflow-demo
+```
 
 ## Nextflow installation
 
@@ -65,7 +69,7 @@ sudo yum install jq
 Option 1: CDK (preferred)
 
 ```
-> cd ~/nextflow-demo/aws-resources-cdk
+> cd aws-resources-cdk
 > npm install
 > npm run cdk:deploy
 ```
@@ -124,17 +128,21 @@ Option 1: CDK (preferred)
 
 ## 2. Download data
 ```
-> cd ~/nextflow-demo
-> goodls -u https://drive.google.com/file/d/1K8oPgVFJZwB_T2nJPc-TmvMGYg7oyU-e/view?usp=sharing
-Downloading (bytes)... 5848241
-{"Filename": "data.zip", "Type": "file", "MimeType": "application/zip", "FileSize": 5848241}
+> cd nextflow-demo
+> aws s3 cp s3://ee-assets-prod-us-east-1/modules/adea752f4ec54648b489ae4b8a56f243/v1/data.zip data.zip 
+
+download: s3://ee-assets-prod-us-east-1/modules/adea752f4ec54648b489ae4b8a56f243/v1/data.zip to ./data.zip
+
 > unzip data.zip
 ```
 
 ## 3. Copy wgbs data to output bucket
 ```
-> cd ~/nextflow-demo
-> goodls -u https://drive.google.com/file/d/12lVQdYW3rH78P-twMHL1mIZ6bzM1aj96/view?usp=sharing
+> cd nextflow-demo
+> aws s3 cp s3://ee-assets-prod-us-east-1/modules/adea752f4ec54648b489ae4b8a56f243/v1/wgbs_genomes.zip wgbs_genomes.zip
+
+download: s3://ee-assets-prod-us-east-1/modules/adea752f4ec54648b489ae4b8a56f243/v1/wgbs_genomes.zip to ./wgbs_genomes.zip
+
 > unzip wgbs_genomes.zip
 > aws s3 cp ./wgbs_genomes s3://$(cat aws-outputs.json | jq -r '.NextflowDemoCdkStack.outputBucketName')/wgbs_genomes --recursive
 ```
@@ -143,7 +151,7 @@ Downloading (bytes)... 5848241
 
 ```
 # Run script
-> cd ~/nextflow-demo
+> cd nextflow-demo
 > . ./run.sh
 ```
 
