@@ -11,3 +11,5 @@ data
 bin/__pycache__/*
 data.zip
 aws-outputs.json
+.idea
+*.iml
