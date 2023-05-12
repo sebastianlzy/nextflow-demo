@@ -8,21 +8,20 @@
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
     "cdk": "cdk",
     "test": "jest",
-    "cdk:synth": "cdk synth",
+    "cdk:synth": "cdk synth > ./cdk.out/nextflow-demo.template.yaml",
     "cdk:deploy": "cdk bootstrap; cdk synth; cdk deploy --outputs-file ../aws-outputs.json",
     "install-prerequisite": ". ./install-prequisite.sh"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.113.0",
-    "aws-cdk": "1.113.0",
     "jest": "^26.4.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-batch": "^1.115.0",
-    "@aws-cdk/aws-cloud9": "^1.115.0",
-    "@aws-cdk/aws-ec2": "^1.115.0",
-    "@aws-cdk/aws-iam": "^1.115.0",
-    "@aws-cdk/aws-s3": "^1.115.0",
-    "@aws-cdk/core": "1.113.0"
+    "@aws-cdk/aws-batch": "^1.201.0",
+    "@aws-cdk/aws-cloud9": "^1.201.0",
+    "@aws-cdk/aws-ec2": "^1.201.0",
+    "@aws-cdk/aws-ecs": "^1.201.0",
+    "@aws-cdk/aws-iam": "^1.201.0",
+    "@aws-cdk/aws-s3": "^1.201.0",
+    "@aws-cdk/core": "^1.201.0"
   }
 }
