@@ -7,6 +7,8 @@ const ecs = require('@aws-cdk/aws-ecs')
 const cloud9 = require('@aws-cdk/aws-cloud9')
 const {EbsDeviceVolumeType} = require("@aws-cdk/aws-ec2/lib/volume");
 
+const launchTemplateName = "extra-storage-launch-template"
+
 const createS3Resources = (stack) => {
     const tempBucket = new S3.Bucket(stack, `nextflow-temp`, {
         autoDeleteObjects: true,
@@ -54,8 +56,54 @@ const createIamBatchRole = (stack) => {
     })
 }
 
+const createLaunchTemplate = (stack) => {
+    /**
+     * Create user data
+     */
+    const bootHookConf = ec2.UserData.forLinux();
+    bootHookConf.addCommands('cloud-init-per once docker_options echo \'OPTIONS="${OPTIONS} --storage-opt dm.basesize=40G"\' >> /etc/sysconfig/docker');
+
+    const setupCommands = ec2.UserData.forLinux();
+    setupCommands.addCommands('sudo yum install awscli ');
+
+    const multipartUserData = new ec2.MultipartUserData();
+// The docker has to be configured at early stage, so content type is overridden to boothook
+    multipartUserData.addPart(ec2.MultipartBody.fromUserData(bootHookConf, 'text/cloud-boothook; charset="us-ascii"'));
+// Execute the rest of setup
+    multipartUserData.addPart(ec2.MultipartBody.fromUserData(setupCommands));
+
+    /**
+     * Create Launch Template
+     *
+     */
+
+
+    // const largerStorageTemplate = new ec2.LaunchTemplate(stack, 'LaunchTemplate', {
+    //     launchTemplateName: launchTemplateName,
+    //     userData: multipartUserData,
+    //     instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE),
+    //     spotOptions: {
+    //         maxPrice: 10000,
+    //         interruptionBehavior: ec2.SpotInstanceInterruption.STOP,
+    //         requestType: ec2.SpotRequestType.ONE_TIME,
+    //     },
+    //     blockDevices: [
+    //         {
+    //             deviceName: '/dev/sda1',
+    //             volume: ec2.BlockDeviceVolume.ebs(200, {
+    //                 volumeType: ec2.EbsDeviceVolumeType.GP3
+    //             }),
+    //         },
+    //     ],
+    // });
+}
+
 const createBatchResources = (stack) => {
 
+
+    const customAMIName = "nextflow-demo-ami-with-aws-cli"
+    const customAMIOwner = "134800022762"
+    const ec2KeyPair = "leesebas-new-rsa"
     const iamBatchRole = createIamBatchRole(stack)
     const instanceProfile = createIamEC2InstanceProfile(stack)
     const vpc = ec2.Vpc.fromLookup(stack, "VPC", {
@@ -63,86 +111,58 @@ const createBatchResources = (stack) => {
         }
     )
 
-    const largerStorageTemplate = new ec2.LaunchTemplate(stack, 'LaunchTemplate', {
-        launchTemplateName: 'extra-storage-template',
-        machineImage: ecs.EcsOptimizedImage.amazonLinux2(ecs.AmiHardwareType.GPU),
-        instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE),
-        spotOptions: {
-            maxPrice: 10000,
-            interruptionBehavior: ec2.SpotInstanceInterruption.STOP,
-            requestType: ec2.SpotRequestType.ONE_TIME,
-        },
-        blockDevices: [
-            {
-                deviceName: '/dev/sda1',
-                volume: ec2.BlockDeviceVolume.ebs(200, {
-                    volumeType: ec2.EbsDeviceVolumeType.GP3
-                }),
-            },
-        ],
-    });
+    const securityGroup = new ec2.SecurityGroup(stack, 'aws-security-group', {
+        allowAllOutbound: true,
+        vpc: vpc,
+    })
+    securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic(), 'Frm anywhere');
 
-    // const extraStorageLaunchTemplate = new ec2.CfnLaunchTemplate(stack, 'LaunchTemplate', {
-    //     launchTemplateName: 'extra-storage-template',
-    //     launchTemplateData: {
-    //         instanceType: 'm5.small',
-    //         iamInstanceProfile: {
-    //           arn: instanceProfile.attrArn,
-    //           name: instanceProfile.instanceProfileName
-    //         },
-    //         instanceMarketOptions: {
-    //             spotOptions: {
-    //                 instanceInterruptionBehavior: 'instanceInterruptionBehavior',
-    //                 maxPrice: 'maxPrice',
-    //                 spotInstanceType: 'spotInstanceType',
-    //                 validUntil: 'validUntil',
-    //             },
-    //         },
-    //         blockDeviceMappings: [
-    //             {
-    //                 deviceName: '/dev/xvdcz',
-    //                 ebs: {
-    //                     encrypted: true,
-    //                     volumeSize: 100,
-    //                     volumeType: 'gp3',
-    //                 },
-    //             },
-    //         ],
-    //     },
-    // });
+
+    /**
+     * Suppose that any of these parameters (except the Amazon EC2 tags) are specified both in the launch template and in the compute environment configuration.
+     * Then, the compute environment parameters take precedence. Amazon EC2 tags are merged between the launch template and the compute environment configuration.
+     * If there's a collision on the tag's key, the value in the compute environment configuration takes precedence.
+     */
 
     const awsSpotManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-spot`, {
         computeResources: {
-            // type: batch.ComputeResourceType.SPOT,
-            // allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
-            launchTemplate: {
-                launchTemplateName: "extra-storage-template",
-                version: "$Latest",
-            },
-            // launchTemplate: new ec2.LaunchTemplate(stack, 'LaunchTemplate', {
-            //     machineImage: ecs.EcsOptimizedImage.amazonLinux2(ecs.AmiHardwareType.STANDARD),
-            //     instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE)
-            // }),
-            vpc: vpc
+            type: batch.ComputeResourceType.SPOT,
+            allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
+            // launchTemplate: {
+            //     launchTemplateName: launchTemplateName,
+            //     version: "$Latest",
+            // },
+            // image: ecs.EcsOptimizedImage.amazonLinux2(ecs.AmiHardwareType.STANDARD),
+            image: ec2.MachineImage.lookup({name: customAMIName, owners: [customAMIOwner]}),
+            instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE)],
+            vpc: vpc,
+            minvCpus: 2,
+            maxvCpus: 100,
+            instanceRole: instanceProfile.attrArn,
+            ec2KeyPair: ec2KeyPair,
+            securityGroups: [securityGroup],
+            computeResourcesTags: {"Name": "nextflow-spot-managed-compute-env"}
+
         },
         // computeEnvironmentName: "spot-compute-env",
         serviceRole: iamBatchRole
     });
 
-    awsSpotManagedComputeEnv.node.addDependency(largerStorageTemplate)
+    // awsSpotManagedComputeEnv.node.addDependency(largerStorageTemplate)
 
-    const awsOnDemandManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-on-demand`, {
-        computeResources: {
-            type: batch.ComputeResourceType.ON_DEMAND,
-            allocationStrategy: batch.AllocationStrategy.BEST_FIT,
-            vpc: vpc,
-            instanceRole: instanceProfile.attrArn,
-            desiredvCpus: 8,
-            maxvCpus: 2048
-        },
-        // computeEnvironmentName: "on-demand-compute-env",
-        serviceRole: iamBatchRole
-    });
+    // const awsOnDemandManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-on-demand`, {
+    //     computeResources: {
+    //         type: batch.ComputeResourceType.ON_DEMAND,
+    //         allocationStrategy: batch.AllocationStrategy.BEST_FIT,
+    //         vpc: vpc,
+    //         instanceRole: instanceProfile.attrArn,
+    //         desiredvCpus: 8,
+    //         maxvCpus: 2048
+    //
+    //     },
+    //     // computeEnvironmentName: "on-demand-compute-env",
+    //     serviceRole: iamBatchRole
+    // });
 
     const jobQueue = new batch.JobQueue(stack, `job-queue`, {
         computeEnvironments: [
@@ -150,10 +170,10 @@ const createBatchResources = (stack) => {
                 computeEnvironment: awsSpotManagedComputeEnv,
                 order: 1,
             },
-            {
-                computeEnvironment: awsOnDemandManagedComputeEnv,
-                order: 10,
-            },
+            // {
+            //     computeEnvironment: awsOnDemandManagedComputeEnv,
+            //     order: 10,
+            // },
         ],
         jobQueueName: "nextflow-job-queue-demo"
     });
@@ -180,6 +200,7 @@ class NextflowDemoCdkStack extends cdk.Stack {
     constructor(scope, id, props) {
         super(scope, id, props);
 
+        createLaunchTemplate(this)
         createS3Resources(this)
         createBatchResources(this)
     }
