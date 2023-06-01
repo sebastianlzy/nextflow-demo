@@ -78,31 +78,26 @@ const createLaunchTemplate = (stack) => {
      */
 
 
-    // const largerStorageTemplate = new ec2.LaunchTemplate(stack, 'LaunchTemplate', {
-    //     launchTemplateName: launchTemplateName,
-    //     userData: multipartUserData,
-    //     instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE),
-    //     spotOptions: {
-    //         maxPrice: 10000,
-    //         interruptionBehavior: ec2.SpotInstanceInterruption.STOP,
-    //         requestType: ec2.SpotRequestType.ONE_TIME,
-    //     },
-    //     blockDevices: [
-    //         {
-    //             deviceName: '/dev/sda1',
-    //             volume: ec2.BlockDeviceVolume.ebs(200, {
-    //                 volumeType: ec2.EbsDeviceVolumeType.GP3
-    //             }),
-    //         },
-    //     ],
-    // });
+    const largerStorageTemplate = new ec2.LaunchTemplate(stack, 'LaunchTemplate', {
+        launchTemplateName: launchTemplateName,
+        userData: multipartUserData,
+        machineImage: ecs.EcsOptimizedImage.amazonLinux2(ecs.AmiHardwareType.STANDARD),
+        instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE),
+        blockDevices: [
+            {
+                deviceName: '/dev/sda1',
+                volume: ec2.BlockDeviceVolume.ebs(200, {
+                    volumeType: ec2.EbsDeviceVolumeType.GP3
+                }),
+            },
+        ],
+    });
 }
 
 const createBatchResources = (stack) => {
 
 
-    const customAMIName = "nextflow-demo-ami-with-aws-cli"
-    const customAMIOwner = "134800022762"
+    const jobQueueName = "nextflow-job-queue-demo"
     const ec2KeyPair = "leesebas-new-rsa"
     const iamBatchRole = createIamBatchRole(stack)
     const instanceProfile = createIamEC2InstanceProfile(stack)
@@ -128,15 +123,12 @@ const createBatchResources = (stack) => {
         computeResources: {
             type: batch.ComputeResourceType.SPOT,
             allocationStrategy: batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,
-            // launchTemplate: {
-            //     launchTemplateName: launchTemplateName,
-            //     version: "$Latest",
-            // },
-            // image: ecs.EcsOptimizedImage.amazonLinux2(ecs.AmiHardwareType.STANDARD),
-            image: ec2.MachineImage.lookup({name: customAMIName, owners: [customAMIOwner]}),
-            instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE)],
+            launchTemplate: {
+                launchTemplateName: launchTemplateName,
+                version: "$Latest",
+            },
             vpc: vpc,
-            minvCpus: 2,
+            minvCpus: 0,
             maxvCpus: 100,
             instanceRole: instanceProfile.attrArn,
             ec2KeyPair: ec2KeyPair,
@@ -144,25 +136,23 @@ const createBatchResources = (stack) => {
             computeResourcesTags: {"Name": "nextflow-spot-managed-compute-env"}
 
         },
-        // computeEnvironmentName: "spot-compute-env",
         serviceRole: iamBatchRole
     });
 
     // awsSpotManagedComputeEnv.node.addDependency(largerStorageTemplate)
 
-    // const awsOnDemandManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-on-demand`, {
-    //     computeResources: {
-    //         type: batch.ComputeResourceType.ON_DEMAND,
-    //         allocationStrategy: batch.AllocationStrategy.BEST_FIT,
-    //         vpc: vpc,
-    //         instanceRole: instanceProfile.attrArn,
-    //         desiredvCpus: 8,
-    //         maxvCpus: 2048
-    //
-    //     },
-    //     // computeEnvironmentName: "on-demand-compute-env",
-    //     serviceRole: iamBatchRole
-    // });
+    const awsOnDemandManagedComputeEnv = new batch.ComputeEnvironment(stack, `aws-managed-compute-env-on-demand`, {
+        computeResources: {
+            type: batch.ComputeResourceType.ON_DEMAND,
+            allocationStrategy: batch.AllocationStrategy.BEST_FIT,
+            vpc: vpc,
+            instanceRole: instanceProfile.attrArn,
+            desiredvCpus: 8,
+            maxvCpus: 2048,
+            computeResourcesTags: {"Name": "nextflow-on-demand-managed-compute-env"}
+        },
+        serviceRole: iamBatchRole
+    });
 
     const jobQueue = new batch.JobQueue(stack, `job-queue`, {
         computeEnvironments: [
@@ -170,12 +160,12 @@ const createBatchResources = (stack) => {
                 computeEnvironment: awsSpotManagedComputeEnv,
                 order: 1,
             },
-            // {
-            //     computeEnvironment: awsOnDemandManagedComputeEnv,
-            //     order: 10,
-            // },
+            {
+                computeEnvironment: awsOnDemandManagedComputeEnv,
+                order: 10,
+            },
         ],
-        jobQueueName: "nextflow-job-queue-demo"
+        jobQueueName: jobQueueName
     });
 
     new cdk.CfnOutput(stack, 'iamBatchRoleName', {
